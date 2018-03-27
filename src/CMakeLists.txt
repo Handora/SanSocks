@@ -1,2 +1,2 @@
-add_subdirectory(Cipher)
+add_subdirectory(cipher)
 
