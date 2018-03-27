@@ -47,4 +47,4 @@ include_directories(BEFORE src)
 
 # --[ Subdirectory
 add_subdirectory(src)
-# add_subdirectory(test)
+add_subdirectory(test)
