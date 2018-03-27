@@ -1,0 +1,5 @@
+* SanSock - A simple sock5 protocol based tools
+** Todo [0/3]
+- [ ] Cipher class
+- [ ] Server class
+- [ ] Client class
