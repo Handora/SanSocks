@@ -1,4 +1,5 @@
-#include "Cipher.h"
+#include "cipher.h"
+#include <memory>
 
 namespace cipher
 { 
@@ -37,6 +38,12 @@ namespace cipher
     delete after_decode;
     return std::move(ans);
   }
-
   
+}
+int main(int argc, char *argv[])
+{
+  using namespace cipher;
+  auto p = Cipher::Instance();
+  std::cout << p->decode(p->encode("Hello"));
+  return 0;
 }
