@@ -21,8 +21,8 @@ namespace cipher
     }
     static std::shared_ptr<Cipher> single_cipher_;
   private: 
-    std::array<char, 256> encryption_;
-    std::array<char, 256> decryption_;
+    std::array<char, 128> encryption_;
+    std::array<char, 128> decryption_;
     std::shared_ptr<Base64> base64_helper_;
   }; 
 };
