@@ -1,4 +1,4 @@
-#include "cipher.h"
+#include "cipher/cipher.h"
 #include <memory>
 
 namespace cipher
@@ -14,8 +14,6 @@ namespace cipher
     std::random_shuffle(encryption_.begin(), encryption_.end());
     for(int i = 0;i < 128;i++)
       decryption_[encryption_[i]] = i;
-    for(int i = 0;i < 128;i++)
-      std::cout << i << " " << (int)encryption_[i] << std::endl;
   }
 
   std::string Cipher ::encode(std::string wait_encode)
@@ -46,8 +44,8 @@ namespace cipher
 }
 
 /*
-int main(int argc, char *argv[])
-{
+  int main(int argc, char *argv[])
+  {
   using namespace cipher;
   auto p = Cipher::Instance();
   std::cout << p->decode(p->encode("Hello"));
