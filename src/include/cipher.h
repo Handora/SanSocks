@@ -13,16 +13,17 @@ namespace cipher
   public:
     Cipher();
     std::string encode(std::string);
-    std::string decode(std::string); 
+    std::string decode(std::string);
     static std::shared_ptr<Cipher> Instance() {
+      if (single_cipher_ == nullptr)
+        single_cipher_ = std::make_shared<Cipher>();
       return single_cipher_;
     }
+    static std::shared_ptr<Cipher> single_cipher_;
   private: 
     std::array<char, 256> encryption_;
     std::array<char, 256> decryption_;
     std::shared_ptr<Base64> base64_helper_;
-    static std::shared_ptr<Cipher> single_cipher_; 
-  };
-  std::shared_ptr<Cipher> Cipher :: single_cipher_ = std::make_shared<Cipher>(); 
+  }; 
 };
 

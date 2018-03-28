@@ -2,7 +2,8 @@
 #include <memory>
 
 namespace cipher
-{ 
+{
+  std::shared_ptr<Cipher> Cipher::single_cipher_ = nullptr;
   Cipher ::Cipher()
   {
     base64_helper_ = std::make_shared<Base64>();
@@ -40,6 +41,8 @@ namespace cipher
   }
   
 }
+
+/*
 int main(int argc, char *argv[])
 {
   using namespace cipher;
@@ -47,3 +50,4 @@ int main(int argc, char *argv[])
   std::cout << p->decode(p->encode("Hello"));
   return 0;
 }
+*/

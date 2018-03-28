@@ -1,1 +1,1 @@
-add_executable(cipher cipher.cpp base64.cpp)
+add_library(cipher cipher.cpp base64.cpp)
