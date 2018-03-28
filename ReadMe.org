@@ -3,3 +3,24 @@
 - [ ] Cipher class
 - [ ] Server class
 - [ ] Client class
+** Build
+#+BEGIN_SRC shell
+    mkdir build
+    cd build
+    cmake ..
+    make
+    # if you want to make with 4 threads
+    make -j 4
+#+END_SRC
+** Testing
+#+BEGIN_SRC shell
+  cd build
+  make check
+#+END_SRC
+** Unit Testing
+#+BEGIN_SRC shell
+  # if you want to unit test cipher_test
+  cd build
+  make cipher_test
+  # and so on
+#+END_SRC
