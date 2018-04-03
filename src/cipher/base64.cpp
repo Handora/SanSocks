@@ -2,17 +2,17 @@
 
 namespace cipher
 {
-  char* Base64 :: decoding_table = nullptr;
-  char * Base64::base64_encode(const unsigned char *data,
-                              size_t input_length,
-                              size_t *output_length)
+  std::vector<char> Base64 :: decoding_table;
+  std::string Base64::base64_encode(const std::string& data)
   {
+	size_t input_length = data.size();
+	size_t output_length = 4 * ((input_length + 2) / 3);
 
-    *output_length = 4 * ((input_length + 2) / 3);
+	std::string encoded_data;
+	encoded_data.resize(output_length);
 
-    char *encoded_data = new char[*output_length];
-    if (encoded_data == nullptr)
-      return nullptr;
+    if (encoded_data.empty())
+      return encoded_data;
 
     for (int i = 0, j = 0; i < input_length;)
     {
@@ -30,32 +30,30 @@ namespace cipher
     }
 
     for (int i = 0; i < mod_table[input_length % 3]; i++)
-      encoded_data[*output_length - 1 - i] = '=';
+      encoded_data[output_length - 1 - i] = '=';
 
-    return encoded_data;
+    return std::move(encoded_data);
   }
 
-  unsigned char* Base64::base64_decode(const char *data,
-                                       size_t input_length,
-                                       size_t *output_length)
+  std::string Base64::base64_decode(const std::string& data)
   {
-
-    if (decoding_table == NULL)
+	  size_t input_length = data.size();
+    if (decoding_table.empty())
       build_decoding_table();
-
+	std::string decoded_data;
     if (input_length % 4 != 0)
-      return NULL;
-
-    *output_length = input_length / 4 * 3;
+      return decoded_data;
+	decoded_data.resize(input_length / 4 * 3);
+	size_t len =decoded_data.size();
+	size_t* output_length = &len;
     if (data[input_length - 1] == '=')
       (*output_length)--;
     if (data[input_length - 2] == '=')
       (*output_length)--;
-
-    unsigned char *decoded_data = new unsigned char[*output_length];
+/*
     if (decoded_data == NULL)
       return NULL;
-
+	  */
     for (int i = 0, j = 0; i < input_length;)
     {
 
@@ -74,19 +72,19 @@ namespace cipher
         decoded_data[j++] = (triple >> 0 * 8) & 0xFF;
     }
 
-    return decoded_data;
+    return std::move(decoded_data);
   }
 
   void Base64::build_decoding_table() {
 
-      decoding_table = new char[256];
-
+      //decoding_table = new char[256];
+	  decoding_table.resize(256);
       for (int i = 0; i < 64; i++)
           decoding_table[(unsigned char) encoding_table[i]] = i;
   }
 
 
   void Base64::base64_cleanup() {
-    delete[] decoding_table;
+	  decoding_table.clear();
   }
 }
