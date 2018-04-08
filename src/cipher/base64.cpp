@@ -54,7 +54,6 @@ namespace sansocks
     */
     for (int i = 0, j = 0; i < input_length;)
     {
-
       uint32_t sextet_a = data[i] == '=' ? 0 & i++ : decoding_table_[data[i++]];
       uint32_t sextet_b = data[i] == '=' ? 0 & i++ : decoding_table_[data[i++]];
       uint32_t sextet_c = data[i] == '=' ? 0 & i++ : decoding_table_[data[i++]];
