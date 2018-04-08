@@ -10,6 +10,6 @@ namespace sansocks {
 
   TEST(CipherTest, SimpleTest) {
     auto cipher_manager = Cipher::Instance();
-    EXPECT_EQ(cipher_manager->decode(cipher_manager->encode("Hello")), std::string("Hello"));
+    EXPECT_EQ(cipher_manager->Decode(cipher_manager->Encode("Hello")), std::string("Hello"));
   }
 }

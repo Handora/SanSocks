@@ -12,8 +12,9 @@ namespace sansocks
   {
   public:
     Cipher();
-    std::string encode(std::string);
-    std::string decode(std::string);
+    std::string Encode(std::string);
+    std::string Decode(std::string);
+    std::string ToString();
     static std::shared_ptr<Cipher> Instance() {
       if (single_cipher_ == nullptr)
         single_cipher_ = std::make_shared<Cipher>();
