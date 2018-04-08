@@ -11,20 +11,25 @@ namespace server {
   public:
     Server(const std::string& path);
     ~Server();
-  private:
+    
+  private: 
     void ReadConfig();
     std::string config_path_;
     std::string port_;
     std::string base64_table_code_;
     std::string path_;
     boost::asio::io_service io_service_;
+    boost::asio::signal_set signals_;
+    
   };
 
 } // namespace server
 
 namespace server {
   
-  Server::Server(const std::string& path): path_(path) {
+  Server::Server(const std::string& path)
+    : path_(path),
+      signals_(io_service_) {
     using namespace boost::asio;
     
   }
