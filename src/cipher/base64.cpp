@@ -1,6 +1,6 @@
 #include "cipher/base64.h"
 
-namespace cipher
+namespace sansocks
 {
 	std::vector<char> Base64::decoding_table;
 	std::string Base64::base64_encode(const std::string& data)

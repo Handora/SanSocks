@@ -7,3 +7,4 @@ build
 *.vcxproj.filters
 *.vcxproj.user
 Debug
+#*

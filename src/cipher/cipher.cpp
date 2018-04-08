@@ -1,7 +1,7 @@
 #include "cipher/cipher.h"
 #include <memory>
 
-namespace cipher
+namespace sansocks
 {
 	std::shared_ptr<Cipher> Cipher::single_cipher_ = nullptr;
 	Cipher::Cipher()
@@ -38,8 +38,8 @@ namespace cipher
 
   int main(int argc, char *argv[])
   {
-  using namespace cipher;
-  auto p = Cipher::Instance();
+    using namespace sansocks;
+    auto p = Cipher::Instance();
   std::cout << p->decode(p->encode("Hello"));
   system("pause");
   return 0;

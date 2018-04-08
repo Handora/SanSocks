@@ -5,7 +5,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
-namespace server {
+namespace sansocks {
   
   class Server
   {
@@ -24,26 +24,26 @@ namespace server {
     
   };
 
-} // namespace server
+  } // namespace sansocks
 
-namespace server {
+  namespace sansocks {
   
   Server::Server(const std::string& path)
-    : path_(path),
-      signals_(io_service_) {
-    using namespace boost::asio;
+  : path_(path),
+  signals_(io_service_) {
+  using namespace boost::asio;
     
   }
 
   void Server::ReadConfig() {
-    using boost::property_tree::ptree;
-    using boost::property_tree::read_json;
-    ptree config;
-    read_json(config_path_, config);
-    port_ = std::move(config.get<std::string>("port"));
-    base64_table_code_ = std::move(config.get<std::string>("code"));
+  using boost::property_tree::ptree;
+  using boost::property_tree::read_json;
+  ptree config;
+  read_json(config_path_, config);
+  port_ = std::move(config.get<std::string>("port"));
+  base64_table_code_ = std::move(config.get<std::string>("code"));
 
-    return ;
+  return ;
   }
-} // namespace server
+  } // namespace server
 */

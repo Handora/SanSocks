@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include<vector>
-namespace cipher
+namespace sansocks
 {
 	static std::vector<char> encoding_table {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
 				  'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',

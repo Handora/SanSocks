@@ -6,7 +6,7 @@
 #include <array>
 #include "cipher/base64.h"
 
-namespace cipher
+namespace sansocks
 {
   class Cipher
   {
