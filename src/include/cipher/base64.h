@@ -4,9 +4,10 @@
 #include <stdlib.h>
 #include <iostream>
 #include <vector>
+#include "utility/util.h"
 namespace sansocks
 {
-  static std::vector<char> encoding_table {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+  static std::vector<BYTE> encoding_table {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
       'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
       'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
       'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
@@ -20,12 +21,12 @@ namespace sansocks
   public:
     Base64();
     ~Base64(){};
-    std::string base64_encode(const std::string& data);
-    std::string base64_decode(const std::string& data);
+	std::vector<BYTE> base64_encode(const std::vector<BYTE>& data);
+	std::vector<BYTE> base64_decode(const std::vector<BYTE>& data);
   private: 
     void build_decoding_table();
 
-    static std::vector<char> decoding_table_;
+    static std::vector<BYTE> decoding_table_;
   };
 }
 
