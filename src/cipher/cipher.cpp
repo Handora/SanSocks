@@ -1,19 +1,31 @@
 #include "cipher/cipher.h"
-#include <memory>
+#include <algorithm>
+#include <cassert>
 
 namespace sansocks
 {
   std::shared_ptr<Cipher> Cipher::single_cipher_ = nullptr;
-  Cipher::Cipher()
+  Cipher::Cipher(std::string passwd)
   {
-    base64_helper_ = std::make_shared<Base64>();
-    int i = 0;
-    i = 0;
-    for (int i = 0; i < 128; i++)
-      encryption_[i] = i;
-    std::random_shuffle(encryption_.begin(), encryption_.end());
-    for (int i = 0; i < 128; i++)
-      decryption_[encryption_[i]] = i;
+    base64_helper_ = std::make_shared<Base64>(); 
+
+    if (passwd == "") {
+      // if the args is empty, we just generate a new cipher
+      for (int i = 0; i < TABLE_SIZE; i++) 
+	encryption_[i] = i;
+    
+      std::random_shuffle(encryption_.begin(), encryption_.end());
+    } else {
+      // else we generate cipher based on input string =passwd=
+      std::string decoded_passwd = base64_helper_->base64_decode(passwd);
+      // TODO(Handora): enhance the performance of copy => move
+      // can this suceessful?
+      std::move(decoded_passwd);
+      std::copy(decoded_passwd.begin(), decoded_passwd.end(), encryption_.begin());
+    }
+    
+    for (int i = 0; i < TABLE_SIZE; i++)
+      decryption_[(int)reinterpret_cast<uint8_t>(encryption_[i])] = i; 
   }
   
   std::string Cipher::Encode(std::string wait_encode)
@@ -38,17 +50,17 @@ namespace sansocks
   {
     return base64_helper_->base64_encode(std::string(encryption_.begin(),encryption_.end())); 
   }
+  
 }
 
-int main(int, char**)
-{
-  using namespace sansocks;
-  Cipher cipher;
-  std::cerr << "Generating a cipher:\n";
-  std::cout << cipher.ToString();
-  std::cerr << std::endl;
-  return 0;
-}
+//int main(int, char**) {
+//  using namespace sansocks;
+//  auto cipher = Cipher::Instance();
+//  std::cerr << "Generating a cipher:\n";
+//  std::cout << cipher->ToString();
+//  std::cerr << std::endl;
+//  return 0;
+//}
 
 
 
