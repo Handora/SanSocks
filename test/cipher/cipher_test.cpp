@@ -25,7 +25,7 @@ namespace sansocks {
     std::random_shuffle(encryption_test.begin(), encryption_test.end());
 
     Base64 base64er;
-    std::string encoded_passwd = base64er.base64_encode(std::string(encoding_table.begin(), encoding_table.end()));
+    std::vector<BYTE> encoded_passwd = base64er.base64_encode(std::vector<BYTE>(encryption_test.begin(), encryption_test.end()));
     auto cipher_manager = Cipher::Instance(encoded_passwd);
 
     std::string test_str = "Hello, world";
