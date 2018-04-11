@@ -15,17 +15,16 @@ namespace sansocks
 	class Cipher
 	{
 	public:
-		Cipher(std::vector<BYTE>);
+		Cipher(std::string);
 		std::string Encode(const std::string&);
 		std::string Decode(const std::string&);
 		std::vector<BYTE> ToString();
-		static std::shared_ptr<Cipher> Instance(const std::vector < BYTE >& passwd = {}) {
+		static std::shared_ptr<Cipher> Instance(const std::string& passwd = "") {
       if (single_cipher_ == nullptr)
         single_cipher_ = std::make_shared<Cipher>(passwd);
       return single_cipher_;
     }
     static std::shared_ptr<Cipher> single_cipher_;
-    
   private: 
     std::vector<BYTE> encryption_;
     std::vector<BYTE> decryption_;
