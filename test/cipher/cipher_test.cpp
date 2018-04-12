@@ -17,23 +17,25 @@ namespace sansocks {
   }
 
   TEST(CipherTests, CipherReadTest) {
-    std::array<BYTE, TABLE_SIZE> encryption_test;
+    std::vector<BYTE> encryption_test;
 
+    encryption_test.resize(TABLE_SIZE);
     for (int i = 0; i < TABLE_SIZE; i++) 
       encryption_test[i] = i;
     
     std::random_shuffle(encryption_test.begin(), encryption_test.end());
 
     Base64 base64er;
-    std::vector<BYTE> encoded_passwd = base64er.base64_encode(std::vector<BYTE>(encryption_test.begin(), encryption_test.end()));
-    auto cipher_manager = Cipher::Instance(encoded_passwd);
+    std::vector<BYTE> encoded_passwd = base64er.base64_encode(encryption_test);
+    auto cipher_manager = Cipher::Instance(std::string(encoded_passwd.begin(), encoded_passwd.end()));
 
-    std::string test_str = "Hello, world";
+    std::string test_str = "Hello, worldssdasdsadas";
     std::string example_encoded_str = cipher_manager->Encode(test_str); 
     for (auto &s: test_str) {
-      s = encryption_test[s];
+      s = encryption_test[(BYTE)s];
+      std::cout << (int)s << std::endl;
     }
     
-    EXPECT_EQ(test_str, example_encoded_str);
+    EXPECT_EQ(true, test_str == example_encoded_str);
   }
 }
