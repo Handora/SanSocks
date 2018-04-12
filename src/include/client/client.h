@@ -26,18 +26,19 @@ namespace sansocks
 		typedef boost::asio::ip::tcp TCP;
 	public:
 		Client(const std::string& path = "config.json");
-		~Client();
+		~Client() = default;
 	private:
 		void ReadConfig();
-		void StartUp();
-		void HandleMsg(std::shared_ptr<TCP::socket>);
+		void ReadFromBrowser(std::shared_ptr<TCP::socket>);
+		void CommuniteWithServer(std::shared_ptr<TCP::socket>, std::shared_ptr<TCP::socket>,std::string,size_t sz);
+		void ReplyToBrowser(std::shared_ptr < TCP::socket>,std::string, size_t);
+		std::shared_ptr<TCP::socket> ConnectToServer();
 		int local_port_;
 		int remote_port_;
 		std::string remote_addr_;
 		std::string config_path_;
-		std::shared_ptr<Cipher> cipher_ptr;
+		std::shared_ptr<Cipher> cipher_ptr_;
 		boost::asio::io_service ios_;
-		std::shared_ptr<TCP::socket> listen_sock_ptr;
 		std::shared_ptr<TCP::acceptor> acceptor_ptr;
 	};
 }
