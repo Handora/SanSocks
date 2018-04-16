@@ -5,8 +5,8 @@
 #include <string>
 #include <memory>
 #include <thread>
-#include "utility\util.h"
-#include "Cipher\cipher.h"
+#include "utility/util.h"
+#include "cipher/cipher.h"
 
 namespace sansocks
 {

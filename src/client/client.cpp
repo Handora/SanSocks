@@ -1,4 +1,4 @@
-#include "client\client.h"
+#include "client/client.h"
 
 namespace sansocks
 {
@@ -11,7 +11,7 @@ namespace sansocks
 		{
 			auto browser_sock_ptr = std::make_shared<TCP::socket>(new TCP::socket(ios_), SocketDeleter());
 			acceptor_ptr->accept(*browser_sock_ptr);
-			std::thread t(&Client::ReadFromBrowser, this,browser_sock_ptr);
+			std::thread t(&Client::ReadFromBrowser, this, browser_sock_ptr);
 			t.detach();
 		}
 	}
@@ -72,6 +72,6 @@ namespace sansocks
 		remote_port_ = config.get<int>("remote port");
 		remote_addr_ = config.get<std::string>("remote addr");
 		cipher_ptr_ = std::make_shared<Cipher>
-			(std::move(config.get<std::string>("code")));
+		  (std::move(config.get<std::string>("code")));
 	}
 }
