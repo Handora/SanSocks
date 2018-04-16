@@ -29,9 +29,8 @@ namespace sansocks
 		~Client() = default;
 	private:
 		void ReadConfig();
-		void ReadFromBrowser(std::shared_ptr<TCP::socket>);
-		void CommuniteWithServer(std::shared_ptr<TCP::socket>, std::shared_ptr<TCP::socket>,std::string,size_t sz);
-		void ReplyToBrowser(std::shared_ptr < TCP::socket>,std::string, size_t);
+		void PreparedForWork(std::shared_ptr<TCP::socket>);
+		void TransmitMsg(std::shared_ptr<TCP::socket>, std::shared_ptr<TCP::socket>);
 		std::shared_ptr<TCP::socket> ConnectToServer();
 		int local_port_;
 		int remote_port_;
