@@ -18,13 +18,13 @@ namespace sansocks
 	void Client::PreparedForWork(std::shared_ptr<TCP::socket> browser_sock_ptr)
 	{
 		std::shared_ptr<TCP::socket> server_sock_ptr = ConnectToServer();
-		std::thread t1(&Client::TransmitMsg, this, browser_sock_ptr, server_sock_ptr);
-		std::thread t2(&Client::TransmitMsg, this, server_sock_ptr, browser_sock_ptr);
+		std::thread t1(&Client::TransmitMsg, this, browser_sock_ptr, server_sock_ptr,TransmitType::BROWSER_TO_SERVER);
+		std::thread t2(&Client::TransmitMsg, this, server_sock_ptr, browser_sock_ptr,TransmitType::SERVER_TO_BROWSER);
 		t1.detach();
 		t2.detach();
 	}
 
-	void Client::TransmitMsg(std::shared_ptr<TCP::socket> read_sock_ptr, std::shared_ptr<TCP::socket> write_sock_ptr)
+	void Client::TransmitMsg(std::shared_ptr<TCP::socket> read_sock_ptr, std::shared_ptr<TCP::socket> write_sock_ptr,TransmitType type)
 	{
 		boost::system::error_code err;
 		for (;;)
@@ -36,7 +36,10 @@ namespace sansocks
 				break;
 			else if (err)
 				throw boost::system::system_error(err);
-			write_sock_ptr->write_some(boost::asio::buffer(data, sz));
+			if (type == TransmitType::BROWSER_TO_SERVER)
+				data = cipher_ptr_->Encode(data);
+			else data = cipher_ptr_->Decode(data);
+			write_sock_ptr->write_some(boost::asio::buffer(data, data.size()));
 		}
 	}
 
