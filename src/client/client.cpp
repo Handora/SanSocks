@@ -9,9 +9,9 @@ namespace sansocks
 			TCP::endpoint(boost::asio::ip::address::from_string("127.0.0.1"), local_port_)));
 		for (;;)
 		{
-			auto browser_sock_ptr = std::make_shared<TCP::socket>(new TCP::socket(ios_), SocketDeleter());
-			acceptor_ptr->accept(*browser_sock_ptr);
-			PreparedForWork(browser_sock_ptr);
+		  auto browser_sock_ptr = std::make_shared<TCP::socket>(ios_);
+		  acceptor_ptr->accept(*browser_sock_ptr);
+		  PreparedForWork(browser_sock_ptr);
 		}
 	}
 
@@ -45,9 +45,9 @@ namespace sansocks
 
 	auto Client::ConnectToServer() -> std::shared_ptr<TCP::socket>
 	{
-		auto server_sock_ptr = std::make_shared<TCP::socket>(new TCP::socket(ios_),SocketDeleter());
-		server_sock_ptr->connect(TCP::endpoint(boost::asio::ip::address::from_string(remote_addr_), remote_port_));
-		return server_sock_ptr;
+	  auto server_sock_ptr = std::make_shared<TCP::socket>(ios_);
+	  server_sock_ptr->connect(TCP::endpoint(boost::asio::ip::address::from_string(remote_addr_), remote_port_));
+	  return server_sock_ptr;
 	}
 
 	void Client::ReadConfig()
@@ -62,4 +62,13 @@ namespace sansocks
 		cipher_ptr_ = std::make_shared<Cipher>
 		  (std::move(config.get<std::string>("code")));
 	}
+}
+
+
+int main(int, char *[])
+{
+  using namespace sansocks;
+
+  Client client("/home/handora/.sansocks.json");
+  return 0;
 }
