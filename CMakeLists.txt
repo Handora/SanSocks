@@ -7,6 +7,10 @@ include(CTest)
 # ---[ Dependencies
 find_package(Threads REQUIRED)
 
+find_package(Boost REQUIRED )
+include_directories(${Boost_INCLUDE_DIR})
+
+
 # ---[ C++1y Flags
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-std=c++1y" COMPILER_SUPPORTS_CXX1y)

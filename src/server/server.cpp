@@ -101,16 +101,78 @@ namespace sansocks {
     std::string dst_ip;
     std::string dst_port;
     switch (data[3]) {
+      
     case 0x01:
       // TODO(Handora): ipv4 len
-      dst_ip = std::string(dst_ip.begin()+4, dst_ip.begin()+8);
-
+      dst_ip = std::string(data.begin()+4, data.begin()+8);
+      break;
+      
     case 0x03:
       // TCP::resolver
+    {
+      TCP::resolver resolver(io_service_);
+    TCP::resolver::query query(std::string(data.begin() + 5, data.end() - 2), "");
+      auto address_iterator = resolver.resolve(query);
+      dst_ip = (*address_iterator.begin()).host_name();
+      break;
+    }
       
     case 0x04:
       // TODO(Handora): ipv6 len
       dst_ip = std::string(dst_ip.begin()+4, dst_ip.begin()+20);
+      break;
+    }
+
+    dst_port = std::string(dst_ip.end()-2, dst_ip.end());
+    
+    auto dst_sock_ptr = std::make_shared<TCP::socket>(new TCP::socket(io_service_));
+    dst_sock_ptr->connect(TCP::endpoint(boost::asio::ip::address::from_string(dst_ip), stoi(dst_ip)));
+
+    data.resize(1024);
+
+    boost::thread com_thread([&]() {
+	std::string data;
+	data.resize(1024);
+	boost::system::error_code err;
+	for ( ; ; ) {
+	  size_t sz = dst_sock_ptr->read_some(boost::asio::buffer(data), err);
+	  if (err) {
+	    if (err != boost::asio::error::eof) {
+	      BOOST_LOG_TRIVIAL(error) << "read from client failed " << err.message(); 
+	    } 
+	    break;
+	  }
+
+	  if (sz == 0) {
+	    break;
+	  }
+
+	  client_sock_ptr->write_some(boost::asio::buffer(cipher_ptr_->Decode(data), sz), err);
+	  if (err) {
+	    BOOST_LOG_TRIVIAL(error) << "send to dst failed " << err.message();
+	    break;
+	  }
+	}
+      });
+    
+    for ( ; ; ) {
+      size_t sz = client_sock_ptr->read_some(boost::asio::buffer(data), err);
+      if (err) {
+	if (err != boost::asio::error::eof) {
+	  BOOST_LOG_TRIVIAL(error) << "read from client failed " << err.message(); 
+	} 
+	break;
+      }
+
+      if (sz == 0) {
+	break;
+      }
+
+      dst_sock_ptr->write_some(boost::asio::buffer(cipher_ptr_->Decode(data), sz), err);
+      if (err) {
+	BOOST_LOG_TRIVIAL(error) << "send to dst failed " << err.message();
+	break;
+      }
     }
   }
   

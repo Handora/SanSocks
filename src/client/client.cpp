@@ -29,9 +29,9 @@ namespace sansocks
 			std::thread t(&Client::CommuniteWithServer, this, server_sock_ptr, browser_sock_ptr,data);
 			t.detach();
 			if (err == boost::asio::error::eof)
-				break;
+			  break;
 			else if (err)
-				throw boost::system::system_error(err);
+			  throw boost::system::system_error(err);
 		}
 	}
 
