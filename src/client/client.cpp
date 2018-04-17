@@ -11,41 +11,35 @@ namespace sansocks
 		{
 			auto browser_sock_ptr = std::make_shared<TCP::socket>(new TCP::socket(ios_), SocketDeleter());
 			acceptor_ptr->accept(*browser_sock_ptr);
-			std::thread t(&Client::ReadFromBrowser, this, browser_sock_ptr);
-			t.detach();
+			PreparedForWork(browser_sock_ptr);
 		}
 	}
 
-	void Client::ReadFromBrowser(std::shared_ptr<TCP::socket> browser_sock_ptr)
+	void Client::PreparedForWork(std::shared_ptr<TCP::socket> browser_sock_ptr)
 	{
 		std::shared_ptr<TCP::socket> server_sock_ptr = ConnectToServer();
+		std::thread t1(&Client::TransmitMsg, this, browser_sock_ptr, server_sock_ptr,TransmitType::BROWSER_TO_SERVER);
+		std::thread t2(&Client::TransmitMsg, this, server_sock_ptr, browser_sock_ptr,TransmitType::SERVER_TO_BROWSER);
+		t1.detach();
+		t2.detach();
+	}
+
+	void Client::TransmitMsg(std::shared_ptr<TCP::socket> read_sock_ptr, std::shared_ptr<TCP::socket> write_sock_ptr,TransmitType type)
+	{
 		boost::system::error_code err;
 		for (;;)
 		{
 			std::string data;
 			data.resize(1024);
-			size_t sz = browser_sock_ptr->read_some(boost::asio::buffer(data), err);
-			data = cipher_ptr_->Encode(data);
-			std::thread t(&Client::CommuniteWithServer, this, server_sock_ptr, browser_sock_ptr,data);
-			t.detach();
+			size_t sz = read_sock_ptr->read_some(boost::asio::buffer(data),err);
 			if (err == boost::asio::error::eof)
 			  break;
 			else if (err)
-			  throw boost::system::system_error(err);
-		}
-	}
-
-	void Client::CommuniteWithServer(std::shared_ptr<TCP::socket> server_sock_ptr,std::shared_ptr<TCP::socket> browser_scok_ptr, std::string wait_send,size_t sz)
-	{
-		boost::system::error_code err;
-		for (;;)
-		{
-			server_sock_ptr->write_some(boost::asio::buffer(wait_send, sz));
-			std::string data;
-			data.resize(1024);
-			size_t sz = server_sock_ptr->read_some(boost::asio::buffer(data));
-			std::thread t(&Client::ReplyToBrowser, this, browser_scok_ptr, data, sz);
-			t.detach();
+				throw boost::system::system_error(err);
+			if (type == TransmitType::BROWSER_TO_SERVER)
+				data = cipher_ptr_->Encode(data);
+			else data = cipher_ptr_->Decode(data);
+			write_sock_ptr->write_some(boost::asio::buffer(data, data.size()));
 		}
 	}
 
@@ -54,12 +48,6 @@ namespace sansocks
 		auto server_sock_ptr = std::make_shared<TCP::socket>(new TCP::socket(ios_),SocketDeleter());
 		server_sock_ptr->connect(TCP::endpoint(boost::asio::ip::address::from_string(remote_addr_), remote_port_));
 		return server_sock_ptr;
-	}
-
-	void Client::ReplyToBrowser(std::shared_ptr<TCP::socket> broswer_sock_ptr, std::string wait_send, size_t sz)
-	{
-		wait_send = cipher_ptr_->Decode(std::string(wait_send.begin(), wait_send.begin() + sz));
-		broswer_sock_ptr->write_some(boost::asio::buffer(wait_send, sz));
 	}
 
 	void Client::ReadConfig()

@@ -27,11 +27,14 @@ namespace sansocks
 	public:
 		Client(const std::string& path = "config.json");
 		~Client() = default;
+		enum class TransmitType {
+			BROWSER_TO_SERVER = 0,
+			SERVER_TO_BROWSER = 1
+		};
 	private:
 		void ReadConfig();
-		void ReadFromBrowser(std::shared_ptr<TCP::socket>);
-		void CommuniteWithServer(std::shared_ptr<TCP::socket>, std::shared_ptr<TCP::socket>,std::string,size_t sz);
-		void ReplyToBrowser(std::shared_ptr < TCP::socket>,std::string, size_t);
+		void PreparedForWork(std::shared_ptr<TCP::socket>);
+		void TransmitMsg(std::shared_ptr<TCP::socket>, std::shared_ptr<TCP::socket>,Client::TransmitType type);
 		std::shared_ptr<TCP::socket> ConnectToServer();
 		int local_port_;
 		int remote_port_;
@@ -40,5 +43,6 @@ namespace sansocks
 		std::shared_ptr<Cipher> cipher_ptr_;
 		boost::asio::io_service ios_;
 		std::shared_ptr<TCP::acceptor> acceptor_ptr;
+		
 	};
 }
