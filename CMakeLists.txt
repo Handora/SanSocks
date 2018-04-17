@@ -7,16 +7,19 @@ include(CTest)
 # ---[ Dependencies
 find_package(Threads REQUIRED)
 
-find_package(Boost REQUIRED )
-include_directories(${Boost_INCLUDE_DIR})
-
+find_package(Boost 1.66.0 REQUIRED COMPONENTS system thread regex)
+IF(Boost_FOUND)
+  INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
+  LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})
+ENDIF(Boost_FOUND)
+SET(USED_LIBS ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_REGEX_LIBRARY})
 
 # ---[ C++1y Flags
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-std=c++1y" COMPILER_SUPPORTS_CXX1y)
 
 if(COMPILER_SUPPORTS_CXX1y)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -lboost_system")
 else()
   message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++1y support. Please use a different C++ compiler.")
 endif()
