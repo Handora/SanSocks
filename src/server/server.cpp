@@ -3,64 +3,34 @@
  * @author: Handora
  */
 
-#include "cipher/cipher.h"
-#include <boost/asio.hpp>
-#include <boost/thread.hpp>
-#include <boost/log/trivial.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
-#include <string>
-
-namespace sansocks {
-  
-  class Server
-  {
-    typedef boost::asio::ip::tcp TCP;
-  public:
-    Server(const std::string& path);
-    ~Server();
-    
-  private: 
-    void ReadConfig();
-    void HandleConnection(std::shared_ptr<TCP::socket> );
-    
-    std::string config_path_;
-    int port_;
-    std::string base64_table_code_;
-    std::shared_ptr<Cipher> cipher_ptr_;
-    boost::asio::io_service io_service_;
-    boost::asio::signal_set signals_;
-    boost::asio::io_service ios_;
-  };
-
-} // namespace sansocks
+#include "server/server.h"
 
 namespace sansocks {
   
   Server::Server(const std::string& path)
     : config_path_(path),
       signals_(io_service_) {
-    using namespace boost::asio;
+    // read from json 
     ReadConfig();
     
     auto acceptor_ptr
-      = std::make_shared<TCP::acceptor>(ios_,
+      = std::make_shared<TCP::acceptor>(io_service_,
 					TCP::endpoint(boost::asio::ip::address::from_string("127.0.0.1"), port_));
 
-    // open the thread for accepting from the client and establish a
-    // connection
     boost::thread accept_thread([&]() {
-	// TODO(Handora): How to handle the deletor for socket
-	auto client_sock_ptr = std::make_shared<TCP::socket>(new TCP::socket(ios_));
-	acceptor_ptr->accept(*client_sock_ptr);
-	boost::thread connect_thread(&Server::HandleConnection, this, client_sock_ptr);
-	connect_thread.detach();
+	// open the thread for accepting from
+	// the client and establish a connection
+	for ( ; ; ) {
+	  auto client_sock_ptr = std::make_shared<TCP::socket>(io_service_);
+	  acceptor_ptr->accept(*client_sock_ptr);
+	  boost::thread connect_thread(&Server::HandleConnection, this, client_sock_ptr);
+	  connect_thread.detach();
+	}
       });
-    accept_thread.detach();
+    accept_thread.join();
   }
 
   void Server::HandleConnection(std::shared_ptr<TCP::socket> client_sock_ptr) {
-
     boost::system::error_code err;
     std::string data;
     data.resize(1024);
@@ -79,7 +49,7 @@ namespace sansocks {
       BOOST_LOG_TRIVIAL(error) << "first phase structue error hanpened " << err.message();
     }
 
-    client_sock_ptr->write_some(cipher_ptr_->Decode(std::string(0x5, 0x0)), err);
+    client_sock_ptr->write_some(boost::asio::buffer(cipher_ptr_->Decode(std::string(0x5, 0x0))), err);
     if (err) {
       BOOST_LOG_TRIVIAL(error) << "write first phase error hanpened " << err.message();
       return ;
@@ -125,7 +95,7 @@ namespace sansocks {
 
     dst_port = std::string(dst_ip.end()-2, dst_ip.end());
     
-    auto dst_sock_ptr = std::make_shared<TCP::socket>(new TCP::socket(io_service_));
+    auto dst_sock_ptr = std::make_shared<TCP::socket>(io_service_);
     dst_sock_ptr->connect(TCP::endpoint(boost::asio::ip::address::from_string(dst_ip), stoi(dst_ip)));
 
     data.resize(1024);
@@ -187,3 +157,12 @@ namespace sansocks {
     return ;
   }
 } // namespace sansocks
+
+int main(int, char *[])
+{
+  using namespace sansocks;
+
+  Server server("/home/handora/.sansocks-server.json");
+  
+  return 0;
+}

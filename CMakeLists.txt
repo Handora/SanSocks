@@ -6,13 +6,11 @@ include(CTest)
 
 # ---[ Dependencies
 find_package(Threads REQUIRED)
+SET(Boost_USE_STATIC_LIBS ON)
+find_package(Boost 1.66.0 REQUIRED COMPONENTS system thread regex log)
 
-find_package(Boost 1.66.0 REQUIRED COMPONENTS system thread regex)
-IF(Boost_FOUND)
-  INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
-  LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})
-ENDIF(Boost_FOUND)
-SET(USED_LIBS ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_REGEX_LIBRARY})
+INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
+link_directories(${Boost_LIBRARY_DIRS})
 
 # ---[ C++1y Flags
 include(CheckCXXCompilerFlag)
