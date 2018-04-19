@@ -78,11 +78,16 @@ namespace sansocks {
     switch (data[3]) {
       
     case 0x01:
-      // TODO(Handora): ipv4 len
-      dst_ip = std::string(data.begin()+4, data.begin()+8);
-      BOOST_LOG_TRIVIAL(error) << "Unsupported Operation";
-      break;
+      // TODO(Handora): ipv4 len 
       
+      dst_ip.append(std::to_string(static_cast<uint8_t>(data[4])));
+      dst_ip.push_back('.');
+      dst_ip.append(std::to_string(static_cast<uint8_t>(data[5]))); 
+      dst_ip.push_back('.');
+      dst_ip.append(std::to_string(static_cast<uint8_t>(data[6]))); 
+      dst_ip.push_back('.');
+      dst_ip.append(std::to_string(static_cast<uint8_t>(data[7]))); 
+      break;
     case 0x03:
       // TCP::resolver
     {
@@ -95,8 +100,18 @@ namespace sansocks {
       
     case 0x04:
       // TODO(Handora): ipv6 len
-      dst_ip = std::string(dst_ip.begin()+4, dst_ip.begin()+20);
-      BOOST_LOG_TRIVIAL(error) << "Unsupported Operation";
+      char ipv6_str[100];
+      sprintf(ipv6_str, "%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x",
+	      data[4], data[5],
+	      data[6], data[7],
+	      data[8], data[9],
+	      data[10], data[11],
+	      data[12], data[13],
+	      data[14], data[15],
+	      data[16], data[17],
+	      data[18], data[19]);
+      std::cout << ipv6_str << std::endl;
+      dst_ip = std::string(ipv6_str, sizeof(ipv6_str));
       break;
     }
 

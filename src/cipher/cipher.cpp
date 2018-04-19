@@ -3,8 +3,11 @@
 #include <cassert>
 
 namespace sansocks {
+  
   std::shared_ptr<Cipher> Cipher::single_cipher_ = nullptr;
-  Cipher::Cipher(std::string pwd)	{
+
+  
+  Cipher::Cipher(std::string pwd) {
     base64_helper_ = std::make_shared<Base64>();
     std::vector<BYTE> passwd(pwd.begin(),pwd.end());
     if (passwd.empty()) {
