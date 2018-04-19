@@ -140,7 +140,7 @@ namespace sansocks {
 	  BOOST_LOG_TRIVIAL(debug) << "get data from client(" << sz << "): " << std::endl;
 
 	  err.clear();
-	  dst_sock_ptr->write_some(boost::asio::buffer(cipher_ptr->Encode(data), sz), err);
+	  dst_sock_ptr->write_some(boost::asio::buffer(data, sz), err);
 	  if (err) {
 	    BOOST_LOG_TRIVIAL(error) << "send to dst failed " << err.message();
 	    break;
@@ -158,7 +158,7 @@ namespace sansocks {
 	for ( ; ; ) {
 	  err.clear();
 	  size_t sz = dst_sock_ptr->read_some(boost::asio::buffer(data), err);
-	  data = cipher_ptr->Decode(data);
+          
 	  BOOST_LOG_TRIVIAL(debug) << "get data from dst(" << sz << "): " << std::endl;
 	  
 	  if (err) {

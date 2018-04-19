@@ -1,8 +1,11 @@
 * SanSock - A simple sock5 protocol based tools
-** Todo [0/3]
-- [ ] Cipher class
-- [ ] Server class
-- [ ] Client class
+** Todo [3/5]
+- [X] Cipher class
+- [X] Mutithread Server class
+- [X] Mutithread Client class
+- [ ] Async Server class
+- [ ] Async Client class
+
 ** Build
 #+BEGIN_SRC shell
     mkdir build
