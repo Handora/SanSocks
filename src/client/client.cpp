@@ -9,10 +9,10 @@ namespace sansocks {
       std::shared_ptr<TCP::acceptor>(new TCP::acceptor(ios_,
 						       TCP::endpoint(boost::asio::ip::address::from_string("127.0.0.1"),
 								     local_port_)));
-
+    // set with reusable
+    acceptor_ptr->set_option(TCP::acceptor::reuse_address(true));
+    
     for (;;) {
-      acceptor_ptr->set_option(TCP::acceptor::reuse_address(true));
-      
       auto browser_sock_ptr = std::make_shared<TCP::socket>(ios_);
       acceptor_ptr->accept(*browser_sock_ptr);
       PreparedForWork(browser_sock_ptr);
@@ -31,22 +31,32 @@ namespace sansocks {
     boost::system::error_code err;
     std::string data;
     data.resize(1024);
+    
     for (;;) {
+      err.clear();
       size_t sz = read_sock_ptr->read_some(boost::asio::buffer(data), err);
       
       if (err == boost::asio::error::eof) {
 	std::cout << "eof" << std::endl;
+	write_sock_ptr->close();
+	break;
+      } else if (err) {
+	std::cout << "error happened" << err.message();
+	write_sock_ptr->close();
 	break;
       }
-      else if (err)
-	throw boost::system::system_error(err);
       
       if (type == TransmitType::BROWSER_TO_SERVER)
 	data = cipher_ptr_->Encode(data);
       else
 	data = cipher_ptr_->Decode(data);
-      std::cout << sz << " " << data << std::endl;
+
       write_sock_ptr->write_some(boost::asio::buffer(data, sz));
+
+      if (type == TransmitType::BROWSER_TO_SERVER)
+	std::cout << "write to server " << sz << std::endl;
+      else
+	std::cout << "write to browser " << sz << std::endl;
     }
   }
 

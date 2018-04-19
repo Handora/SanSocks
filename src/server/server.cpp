@@ -54,7 +54,7 @@ namespace sansocks {
       return ;
     }
 
-    client_sock_ptr->write_some(boost::asio::buffer(cipher_ptr_->Encode(std::string{0x5, 0x0})), err);
+    client_sock_ptr->write_some(boost::asio::buffer(cipher_ptr_->Encode(std::string{0x5, 0x0}), 2), err);
     if (err) {
       BOOST_LOG_TRIVIAL(error) << "write first phase error hanpened " << err.message();
       return ;
@@ -105,67 +105,81 @@ namespace sansocks {
     uint16_t dst_port = 256 * part1 + part2; 
     
     auto dst_sock_ptr = std::make_shared<TCP::socket>(io_service_); 
-    dst_sock_ptr->connect(TCP::endpoint(boost::asio::ip::address::from_string(dst_ip), dst_port));
+    dst_sock_ptr->connect(TCP::endpoint(boost::asio::ip::address::from_string(dst_ip), dst_port), err);
+    if (err) {
+      BOOST_LOG_TRIVIAL(error) << "connect to dst failed";
+      return;
+    }
+
+    client_sock_ptr->write_some(boost::asio::buffer(cipher_ptr_->Encode(std::string{0x05, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}), 10), err);
+    if (err) {
+      BOOST_LOG_TRIVIAL(error) << "write second phase error hanpened " << err.message();
+      return ;
+    }
     
-    boost::thread com_thread([&]() {
+    boost::thread client_thread([](std::shared_ptr<TCP::socket> client_sock_ptr, std::shared_ptr<TCP::socket> dst_sock_ptr, std::shared_ptr<Cipher> cipher_ptr) {
+	boost::system::error_code err;
+	std::string data; 
+	data.resize(1024);
+	
+	for (;;) {
+	  err.clear(); 
+	  size_t sz = client_sock_ptr->read_some(boost::asio::buffer(data), err); 
+	  if (err) {
+	    if (err != boost::asio::error::eof) {
+	      BOOST_LOG_TRIVIAL(error) << "read from client failed " << err.message(); 
+	    } else {
+	      BOOST_LOG_TRIVIAL(debug) << "client eof" << err.message();
+	    }
+	    dst_sock_ptr->close();
+	    break;
+	  }
+
+	  // TODO(handora): optimize with substr data
+	  data = cipher_ptr->Decode(data);
+	  BOOST_LOG_TRIVIAL(debug) << "get data from client(" << sz << "): " << std::endl;
+
+	  err.clear();
+	  dst_sock_ptr->write_some(boost::asio::buffer(cipher_ptr->Encode(data), sz), err);
+	  if (err) {
+	    BOOST_LOG_TRIVIAL(error) << "send to dst failed " << err.message();
+	    break;
+	  }
+	}
+      }, client_sock_ptr, dst_sock_ptr, cipher_ptr_);
+
+    client_thread.detach();
+
+    boost::thread dst_thread([](std::shared_ptr<TCP::socket> client_sock_ptr, std::shared_ptr<TCP::socket> dst_sock_ptr, std::shared_ptr<Cipher> cipher_ptr) {
 	std::string data;
 	data.resize(1024);
 	boost::system::error_code err;
+	
 	for ( ; ; ) {
+	  err.clear();
 	  size_t sz = dst_sock_ptr->read_some(boost::asio::buffer(data), err);
-	  data = cipher_ptr_->Decode(data);
-	  BOOST_LOG_TRIVIAL(debug) << "get data from dst(" << sz << "): " << data << std::endl;
+	  data = cipher_ptr->Decode(data);
+	  BOOST_LOG_TRIVIAL(debug) << "get data from dst(" << sz << "): " << std::endl;
 	  
 	  if (err) {
 	    if (err != boost::asio::error::eof) {
 	      BOOST_LOG_TRIVIAL(error) << "read from client failed " << err.message(); 
+	    } else {
+	      BOOST_LOG_TRIVIAL(debug) << "dst eof" << err.message();
 	    }
-	    BOOST_LOG_TRIVIAL(debug) << "dst eof" << err.message(); 
+	    client_sock_ptr->close();
 	    break;
 	  }
 
-	  if (sz == 0) {
-	    break;
-	  }
-
-	  client_sock_ptr->write_some(boost::asio::buffer(cipher_ptr_->Encode(data), sz), err);
+	  err.clear();
+	  client_sock_ptr->write_some(boost::asio::buffer(cipher_ptr->Encode(data), sz), err);
 	  if (err) {
 	    BOOST_LOG_TRIVIAL(error) << "send to dst failed " << err.message();
+	    dst_sock_ptr->close();
 	    break;
 	  }
 	}
-      });
-    com_thread.detach();
-
-    boost::thread dst_thread([&]() {    
-	for ( ; ; ) {
-	  std::string data;
-	  data.resize(1024);
-      
-	  size_t sz = client_sock_ptr->read_some(boost::asio::buffer(data), err);
-	  if (err) {
-	    if (err != boost::asio::error::eof) {
-	      BOOST_LOG_TRIVIAL(error) << "read from client failed " << err.message(); 
-	    } else
-	      BOOST_LOG_TRIVIAL(debug) << "client eof" << err.message(); 
-	    break;
-	  }
-
-	  data = cipher_ptr_->Decode(data);
-	  BOOST_LOG_TRIVIAL(debug) << "get data from client(" << sz << "): " << data << std::endl;
-      
-	  if (sz == 0) {
-	    break;
-	  }
-
-	  dst_sock_ptr->write_some(boost::asio::buffer(cipher_ptr_->Encode(data), sz), err);
-	  if (err) {
-	    BOOST_LOG_TRIVIAL(error) << "send to dst failed " << err.message();
-	    break;
-	  }
-	}
-      });
-
+      }, client_sock_ptr, dst_sock_ptr, cipher_ptr_);
     dst_thread.detach();
   }
   
