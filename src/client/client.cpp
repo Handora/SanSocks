@@ -2,9 +2,11 @@
 #include "boost/log/trivial.hpp"
 
 namespace sansocks {
-  Client::Client(const std::string& path) : config_path_(path) {
+  Client::Client(const std::string& path)
+    :config_path_(path), signals(ios_) {
     ReadConfig();
 
+    std::signal(SIGPIPE, SIG_IGN);
     acceptor_ptr =
       std::shared_ptr<TCP::acceptor>(new TCP::acceptor(ios_,
 						       TCP::endpoint(boost::asio::ip::address::from_string("127.0.0.1"),
@@ -34,7 +36,7 @@ namespace sansocks {
     
     for (;;) {
       err.clear();
-      size_t sz = read_sock_ptr->read_some(boost::asio::buffer(data), err);
+      size_t sz = read_sock_ptr->read_some(boost::asio::buffer(data), err); 
       
       if (err == boost::asio::error::eof) {
 	std::cout << "eof" << std::endl;
@@ -51,7 +53,13 @@ namespace sansocks {
       else
 	data = cipher_ptr_->Decode(data);
 
-      write_sock_ptr->write_some(boost::asio::buffer(data, sz));
+      if (!write_sock_ptr->is_open())
+	break;
+      write_sock_ptr->write_some(boost::asio::buffer(data, sz), err);
+      if (err) {
+        read_sock_ptr->close();
+	break;
+      }
 
       if (type == TransmitType::BROWSER_TO_SERVER)
 	std::cout << "write to server " << sz << std::endl;

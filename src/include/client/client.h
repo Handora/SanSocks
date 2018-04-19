@@ -43,6 +43,6 @@ namespace sansocks
 		std::shared_ptr<Cipher> cipher_ptr_;
 		boost::asio::io_service ios_;
 		std::shared_ptr<TCP::acceptor> acceptor_ptr;
-		
+		boost::asio::signal_set signals;
 	};
 }
