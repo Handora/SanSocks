@@ -155,7 +155,12 @@ namespace sansocks {
 	  BOOST_LOG_TRIVIAL(debug) << "get data from client(" << sz << "): " << std::endl;
 
 	  err.clear();
-	  dst_sock_ptr->write_some(boost::asio::buffer(data, sz), err);
+          try {
+	    dst_sock_ptr->write_some(boost::asio::buffer(data, sz), err);
+	  } catch(...) {
+	    BOOST_LOG_TRIVIAL(error) << "try catch exception" << std::endl;
+	    return ;
+	  }
 	  if (err) {
 	    BOOST_LOG_TRIVIAL(error) << "send to dst failed " << err.message();
 	    break;

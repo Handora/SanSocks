@@ -55,10 +55,17 @@ namespace sansocks {
 
       if (!write_sock_ptr->is_open())
 	break;
-      write_sock_ptr->write_some(boost::asio::buffer(data, sz), err);
-      if (err) {
-        read_sock_ptr->close();
-	break;
+
+      try {
+	write_sock_ptr->write_some(boost::asio::buffer(data, sz), err);
+	if (err) {
+	  std::cout << "write error" << err.message() << std::endl;
+	  read_sock_ptr->close();
+	  break;
+	}
+      } catch (...) {
+	std::cout << "catch the exception" << std::endl;
+	return ;
       }
 
       if (type == TransmitType::BROWSER_TO_SERVER)
