@@ -215,7 +215,7 @@ namespace sansocks {
     BOOST_LOG_TRIVIAL(debug) << "port: " << port_ << std::endl << "code_: " << code << std::endl; 
 
     return ;
-}
+  }
 } // namespace sansocks
 
 int main(int, char *[])
